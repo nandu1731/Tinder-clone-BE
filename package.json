@@ -1,0 +1,32 @@
+{
+  "name": "tinder-clone-be",
+  "version": "1.0.0",
+  "description": "tinder backend app",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nandu1731/Tinder-clone-BE.git"
+  },
+  "keywords": [
+    "js",
+    "node",
+    "nodemon"
+  ],
+  "author": "Nandini Bandreddi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nandu1731/Tinder-clone-BE/issues"
+  },
+  "homepage": "https://github.com/nandu1731/Tinder-clone-BE#readme",
+  "dependencies": {
+    "express": "^5.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
