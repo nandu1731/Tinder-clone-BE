@@ -10,12 +10,21 @@ app.get("/", (req, res) => {
   res.send("Home page, welcome nandini!");
 });
 
-app.post("/", (req, res) => {
-  res.send("Post request received");
+app.use("/", (req, res, next) => {
+  console.log("middleware called");
+  next();
 });
 
-app.get("/test", (req, res) => {
-  res.send("Test page");
+app.get(/\/about[a-z0-9]{3,}/, (req, res) => {
+  res.send("About page, welcome nandini!");
+});
+
+app.get("test/:id", (req, res) => {
+  console.log(req.params);
+  console.log(req.query);
+  console.log(req.path);
+
+  res.send("Test page, welcome nandini!");
 });
 
 app.listen(port, () => {
