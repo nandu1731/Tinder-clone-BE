@@ -25,7 +25,8 @@
   },
   "homepage": "https://github.com/nandu1731/Tinder-clone-BE#readme",
   "dependencies": {
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "mongoose": "^8.14.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.10"
