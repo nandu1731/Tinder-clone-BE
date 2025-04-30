@@ -1,91 +1,58 @@
 import express from "express";
 import connectDB from "./config/database.js";
 import User from "./models/userModel.js";
+import cookieParser from "cookie-parser";
+import dotenv from "dotenv";
+import { validateLogin, validateUser } from "./utils/validateNewUser.js";
+import { userAuth } from "./utils/userAuth.js";
 
 const app = express();
 const port = 3000;
+dotenv.config();
 
 // Middleware to parse JSON requests
 app.use(express.json());
+app.use(cookieParser());
 
 app.post("/signup", async (req, res) => {
   const newUser = req.body;
   try {
+    validateUser(newUser); // validating all fields
     const user = new User(newUser);
+    await user.generateHashPwd(); // storing pwd in hash format
     await user.save();
-    res.status(201).json({ message: "User created successfully" });
-  } catch (err) {
     res
-      .status(500)
-      .json({ message: "Error creating user", error: err.message });
+      .status(201)
+      .json({ status: true, message: "User created successfully" });
+  } catch (err) {
+    res.status(500).json({ message: err?.message, status: false });
   }
 });
 
-// GET all users
-
-app.get("/feed", async (req, res) => {
+app.post("/login", async (req, res) => {
+  const loginCreds = req.body;
   try {
-    const users = await User.find({});
-    res.status(200).json(users);
-  } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Error fetching users", error: err.message });
-  }
-});
-
-// GET user by email
-
-// app.get("/feed", async (req, res) => {
-//   try {
-//     const { email } = req.query;
-//     const user = await User.find({ email });
-//     if (!user) {
-//       return res.status(404).json({ message: "User not found" });
-//     }
-//     res.status(200).json(user);
-//   } catch (err) {
-//     res
-//       .status(500)
-//       .json({ message: "Error fetching user", error: err.message });
-//   }
-// });
-
-// Delete user by id
-
-app.delete("/feed", async (req, res) => {
-  try {
-    const { id } = req.query;
-    const user = await User.findByIdAndDelete(id);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+    // validateLogin(loginCreds);
+    const user = await User.findOne({ email: loginCreds?.email });
+    if (!user?._id) {
+      res.status(400).json({ message: "User does not exist", status: false });
     }
-    res.status(200).json({ message: "User deleted successfully" });
-  } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Error deleting user", error: err.message });
-  }
-});
-
-// Update user by id
-app.patch("/feed", async (req, res) => {
-  try {
-    const { id } = req.query;
-    const updatedUser = req.body;
-    const user = await User.findByIdAndUpdate(id, updatedUser, {
-      runValidators: true,
-      new: true,
+    const isMatch = await user.comparePwd(loginCreds.password);
+    if (!isMatch) {
+      res.status(401).json({ message: "Invalid credentials", status: false });
+    }
+    const token = await user.createToken();
+    res.cookie("token", token, {
+      expires: new Date(Date.now() + 24 * 60 * 60 * 1000),
     });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    res.status(200).json({ message: "User updated successfully", data: user });
+    res.status(200).json({ status: true, message: "Login successful" });
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Error updating user", error: err.message });
+    res.status(500).json({ message: err?.message, status: false });
   }
+});
+
+app.get("/profile", userAuth, async (req, res) => {
+  res.status(200).json({ status: true, message: "Authorised request" });
 });
 
 connectDB()
